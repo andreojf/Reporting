@@ -1,0 +1,70 @@
+---
+title: "Reporting mensuel sur le risque de crédit - `r params$arrete`"
+#author: "JA"
+date: "`r Sys.time()`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+params:
+  arrete: 31/12/20
+  moisArrete: Decembre
+  anneeArrete: 2020
+  pays: Burkina
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r echo=FALSE, message=FALSE}
+source("../CodesCredit/portef_bancaire.R")
+```
+
+
+# Situation du portefeuille
+
+## Vision par pays
+
+Cette section décrit la situation du portefeuille de chacun des (08) entités. 
+
+### Burkina
+```{r echo=FALSE, message=FALSE}
+#source("portef_bancaire.R")
+```
+
+
+### Benin
+```{r echo=FALSE, message=FALSE}
+```
+
+
+### Côte d'Ivoire
+```{r echo=FALSE, message=FALSE}
+```
+### Guinée
+```{r echo=FALSE, message=FALSE}
+```
+### Mali
+```{r echo=FALSE, message=FALSE}
+```
+### Niger
+```{r echo=FALSE, message=FALSE}
+```
+### Sénégal
+```{r echo=FALSE, message=FALSE}
+```
+### Togo 
+```{r echo=FALSE, message=FALSE}
+```
+
+## Vision agrégée
+
+# Répartition suivant la qualité 
+# Répartition suivant le segment
+# Répartition suivant le secteur d'activité
+# CDL par age
+# Engagements hors bilan
+# 50 plus gros engagements
+# Situation consolidée du portefeuille
+# 
