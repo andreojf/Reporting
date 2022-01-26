@@ -1,13 +1,14 @@
 ---
 title: "Reporting mensuel sur le risque de crédit - `r params$arrete`"
-#author: "JA"
 date: "`r Sys.time()`"
 output:
   html_document:
-    toc: true
+    toc: yes
     toc_depth: 2
 params:
-  arrete: 31/12/20
+  arrete: '2020-12-31'
+  prev1Arrete: '2020-11-30'
+  prev2Arrete: '2020-10-31'
   moisArrete: Decembre
   anneeArrete: 2020
   pays: Burkina
@@ -18,8 +19,8 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r include=FALSE, message=FALSE, warning=FALSE}
-print(getwd())
 source("CodesCredit/portef_bancaire.R")
+source("CodesCredit/byNotation.R")
 ```
 
 
@@ -34,38 +35,297 @@ Cette section décrit la situation du portefeuille de chacun des (08) entités.
 #source("portef_bancaire.R")
 ```
 
-
 ### Benin
 ```{r echo=FALSE, message=FALSE}
+country = "Benin"
 ```
 
+L'évolution du portefeuille de CBI **`r country`** sur les (03) trois derniers mois.
+
+```{r echo=FALSE, message=FALSE}
+library(plyr)
+country = "Benin"
+final.df %>%
+  pfEvol(pays = country) %>%
+  pfFormatTable(country = country, params = params) %>%
+  tab_header(
+    title = md(paste("**Situation du portefeuille détaillée de CBI ", country, "**", sep = "")),
+    subtitle = paste("arreté du",params$arrete)
+  )
+```
+
+\
+\
+La synthèse suivant les Sains, Restructurés et Douteux et litigieux est reporté dans le tableau suivant:
+
+```{r echo=FALSE, message=FALSE}
+final.df %>%
+  pfEvolGlobal(pays = country) %>%
+  pfFormatTable(country = country, params = params) %>%
+  tab_header(
+    title = md(paste("**Situation globale du portefeuille de CBI ", country, "**", sep = "")),
+    subtitle = paste("arreté du",params$arrete)
+  ) 
+```
+\
+\
 
 ### Côte d'Ivoire
 ```{r echo=FALSE, message=FALSE}
-```
-### Guinée
-```{r echo=FALSE, message=FALSE}
-```
-### Mali
-```{r echo=FALSE, message=FALSE}
-```
-### Niger
-```{r echo=FALSE, message=FALSE}
-```
-### Sénégal
-```{r echo=FALSE, message=FALSE}
-```
-### Togo 
-```{r echo=FALSE, message=FALSE}
+country = "CI"
 ```
 
+L'évolution du portefeuille de CBI **`r country`** sur les (03) trois derniers mois.
+
+```{r echo=FALSE, message=FALSE}
+final.df %>%
+  pfEvol(pays = country) %>%
+  pfFormatTable(country = country, params = params) %>%
+  tab_header(
+    title = md(paste("**Situation du portefeuille détaillée de CBI ", country, "**", sep = "")),
+    subtitle = paste("arreté du",params$arrete)
+  )
+```
+
+\
+\
+La synthèse suivant les Sains, Restructurés et Douteux et litigieux est reporté dans le tableau suivant:
+
+```{r echo=FALSE, message=FALSE}
+final.df %>%
+  pfEvolGlobal(pays = country) %>%
+  pfFormatTable(country = country, params = params) %>%
+  tab_header(
+    title = md(paste("**Situation globale du portefeuille de CBI ", country, "**", sep = "")),
+    subtitle = paste("arreté du",params$arrete)
+  ) 
+```
+\
+\
+
+
+### Guinée
+```{r echo=FALSE, message=FALSE}
+country = "Benin"
+```
+
+### Mali
+```{r echo=FALSE, message=FALSE}
+country = "ML"
+```
+
+L'évolution du portefeuille de CBI **`r country`** sur les (03) trois derniers mois.
+
+```{r echo=FALSE, message=FALSE}
+final.df %>%
+  pfEvol(pays = country) %>%
+  pfFormatTable(country = country, params = params) %>%
+  tab_header(
+    title = md(paste("**Situation du portefeuille détaillée de CBI ", country, "**", sep = "")),
+    subtitle = paste("arreté du",params$arrete)
+  )
+```
+
+\
+\
+La synthèse suivant les Sains, Restructurés et Douteux et litigieux est reporté dans le tableau suivant:
+  
+  ```{r echo=FALSE, message=FALSE}
+final.df %>%
+  pfEvolGlobal(pays = country) %>%
+  pfFormatTable(country = country, params = params) %>%
+  tab_header(
+    title = md(paste("**Situation globale du portefeuille de CBI ", country, "**", sep = "")),
+    subtitle = paste("arreté du",params$arrete)
+  ) 
+```
+\
+\
+
+### Niger
+```{r echo=FALSE, message=FALSE}
+country = "NG"
+```
+
+L'évolution du portefeuille de CBI **`r country`** sur les (03) trois derniers mois.
+
+```{r echo=FALSE, message=FALSE}
+final.df %>%
+  pfEvol(pays = country) %>%
+  pfFormatTable(country = country, params = params) %>%
+  tab_header(
+    title = md(paste("**Situation du portefeuille détaillée de CBI ", country, "**", sep = "")),
+    subtitle = paste("arreté du",params$arrete)
+  )
+```
+
+\
+\
+La synthèse suivant les Sains, Restructurés et Douteux et litigieux est reporté dans le tableau suivant:
+
+```{r echo=FALSE, message=FALSE}
+final.df %>%
+  pfEvolGlobal(pays = country) %>%
+  pfFormatTable(country = country, params = params) %>%
+  tab_header(
+    title = md(paste("**Situation globale du portefeuille de CBI ", country, "**", sep = "")),
+    subtitle = paste("arreté du",params$arrete)
+  ) 
+```
+\
+\
+
+### Sénégal
+```{r echo=FALSE, message=FALSE}
+country = "SN"
+```
+
+L'évolution du portefeuille de CBI **`r country`** sur les (03) trois derniers mois.
+
+```{r echo=FALSE, message=FALSE}
+final.df %>%
+  pfEvol(pays = country) %>%
+  pfFormatTable(country = country, params = params) %>%
+  tab_header(
+    title = md(paste("**Situation du portefeuille détaillée de CBI ", country, "**", sep = "")),
+    subtitle = paste("arreté du",params$arrete)
+  )
+```
+
+\
+\
+La synthèse suivant les Sains, Restructurés et Douteux et litigieux est reporté dans le tableau suivant:
+  
+  ```{r echo=FALSE, message=FALSE}
+final.df %>%
+  pfEvolGlobal(pays = country) %>%
+  pfFormatTable(country = country, params = params) %>%
+  tab_header(
+    title = md(paste("**Situation globale du portefeuille de CBI ", country, "**", sep = "")),
+    subtitle = paste("arreté du",params$arrete)
+  ) 
+```
+\
+\
+
+### Togo 
+```{r echo=FALSE, message=FALSE}
+country = "TG"
+```
+
+L'évolution du portefeuille de CBI **`r country`** sur les (03) trois derniers mois.
+
+```{r echo=FALSE, message=FALSE}
+final.df %>%
+  pfEvol(pays = country) %>%
+  pfFormatTable(country = country, params = params) %>%
+  tab_header(
+    title = md(paste("**Situation du portefeuille détaillée de CBI ", country, "**", sep = "")),
+    subtitle = paste("arreté du",params$arrete)
+  )
+```
+
+\
+\
+La synthèse suivant les Sains, Restructurés et Douteux et litigieux est reporté dans le tableau suivant:
+
+```{r echo=FALSE, message=FALSE}
+final.df %>%
+  pfEvolGlobal(pays = country) %>%
+  pfFormatTable(country = country, params = params) %>%
+  tab_header(
+    title = md(paste("**Situation globale du portefeuille de CBI ", country, "**", sep = "")),
+    subtitle = paste("arreté du",params$arrete)
+  ) 
+```
+\
+\
+
+
 ## Vision agrégée
+
+La vision agrégée reprend les mêmes informations que précédemment. Les chiffres sont obtenus en sommant les montants de toutes entités. 
+\
+
 ```{r echo=FALSE, message=FALSE}
 final.df %>%
   pfAgrege %>%
-  kable
+  pfFormatTable(country = country, params = params) %>%
+  tab_header(
+    title = md(paste("**Situation globale du portefeuille du groupe**")),
+    subtitle = paste("arreté du",params$arrete)
+  )
 ```
+
+\
+\
+
+```{r echo=FALSE, message=FALSE}
+final.df %>%
+  pfAgregeGlobal %>%
+  pfFormatTable(country = country, params = params) %>%
+  tab_header(
+    title = md(paste("**Situation globale du portefeuille du groupe**")),
+    subtitle = paste("arreté du",params$arrete)
+  )
+```
+\
+\
+**Observations:**
+`r final.df %>% pfAgregeGlobal %>% storyPtf `
+
 # Répartition suivant la qualité 
+
+
+```{r echo=FALSE, message=FALSE}
+detach("package:plyr", unload = TRUE)
+final.df %>%
+  notationParPays2(arrete = params$arrete) 
+```
+\
+\
+## Vision consolidée
+```{r echo=FALSE, message=FALSE}
+# detach("package:plyr", unload = TRUE)
+final.df %>%
+  notationConsolidee(arrete = params$arrete) 
+```
+
+
+
+
+```{r echo=FALSE, Message=FALSE, fig.width=16, fig.height=6}
+library(plotly)
+library(hrbrthemes)
+library(viridis)
+library(ggplot2)
+p <- final.df %>%
+  filter(Pays == "Benin") %>%
+  group_by(NOTATION, DATE_COMPTA) %>%
+  summarise(
+    TRESO = abs(sum(TRESORERIE)) / 1e6,
+    SIGNAT = abs(sum(SIGNATURE)) / 1e6,
+    TOTAL = abs(TRESO + SIGNAT)
+  ) %>%
+  gather(key = "Indicateurs", value = "Montant", 3:5) %>%
+  ggplot(aes(x=as.character(DATE_COMPTA), y=Montant)) +
+  geom_line(aes(color = NOTATION), size = 0.75) +
+  xlab("(03) derniers arrêtés") +
+  ylab("Montant en Millions") +
+  geom_point(
+    aes(fill = NOTATION), 
+    size = 3, 
+    pch = 21, # Type of point that allows us to have both color (border) and fill.
+    color = "white", 
+    stroke = 1 # The width of the border, i.e. stroke.
+  ) +
+  facet_wrap(~Indicateurs) +
+  scale_fill_viridis(discrete = TRUE) +
+  theme(legend.position="none") +
+  ggtitle("Evolution des indicateurs par type de notation sur les 3 derniers mois") +
+  theme_ipsum()
+ggplotly(p, tooltip="text")
+```
 # Répartition suivant le segment
 # Répartition suivant le secteur d'activité
 # CDL par age

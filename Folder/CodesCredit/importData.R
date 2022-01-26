@@ -1,7 +1,7 @@
 library(readxl)
 library(tidyverse)
 library(plyr)
-# recuperer tous les fichiers excel dans le dossier spÃ©cifiÃ©
+# recuperer tous les fichiers excel dans le dossier spÃÂ©cifiÃÂ©
 
 
 importFile <- function(filepath){
