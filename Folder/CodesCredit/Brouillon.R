@@ -558,3 +558,140 @@ ggplot(data=val, aes(x=course, y=num, group=1, label=num)) +
 
 
 
+transNotation <- function(df, arrete, profondeur){
+  out <- df %>%
+    filter(DATE_COMPTA == arrete %m-% months(profondeur)) %>% 
+    select(CLIENT, NOTATION, Pays) %>%
+    left_join(
+      final.df %>%
+        filter(DATE_COMPTA == d) %>% 
+        select(CLIENT, NOTATION, Pays)
+      , by=c("CLIENT","Pays")) %>%
+    #rename(NOTATIONAVANT = NOTATION.x, NOTATIONAPRES = NOTATION.y)
+    group_by(Pays, NOTATION.x, NOTATION.y) %>%
+    summarise(N = n()) %>%
+    spread(key = NOTATION.y, value = N)
+  
+  # remplacer les NAs par 0
+  out[is.na(out)] <- 0
+  
+  return(out)
+}
+
+### au niveau de la dégradation
+adj = "forte"
+madeg = ma * lower.tri(ma)
+ind = which(madeg >= 0.1, arr.ind = T)
+riskclasses = colnames(madeg)
+if (is_empty(ind)) {
+  rep = "Il n y a pas de dégradation"
+} else{
+  ans <- paste0("On observe une ", adj, " dégradation plus de ",0.1*100,"% entre ")
+  for (i in 1:nrow(ind)) {
+    index = ind[i,]
+    ans <- paste(ans,
+             paste0(riskclasses[index[1]], " vers ", riskclasses[index[2]], " (", ma[index[1], index[2]],"%)"))
+  }
+}
+paste0(ans)
+          
+
+classMig <- c()
+ans <- c()
+rownames(m) = colnames(m)
+m = as.matrix(m)
+for (i in 1:nrow(m)){
+  for (j in 1:ncol(m)) {
+    if (i!=j){
+      if (m[i,j] >= 0.1){
+        classMig <- c(classMig, rownames(m)[i])
+        ans <- paste(ans, paste(100*m[i,j], "% des dossiers",rownames(m)[i],
+                      "se retrouvent en",colnames(m)[j]),".")
+      }
+    }
+  }
+}
+
+if (is.null(ans)){
+  c0 = paste("Aucune observation n'est faite sur les transitions")
+} else {
+  c0 = paste("On note une forte ", sample(c("migration","transition"),1), " des dossiers classés en",
+        paste(unique(classMig),collapse=","),"sur l'arrêté précédent. En effet,", ans)
+}
+
+
+
+tab <- final.df %>%
+  filter(Pays == "Benin", DATE_COMPTA == d %m-% months(1)) %>% 
+  select(CLIENT, NOTATION) %>%
+  left_join(
+    final.df %>%
+      filter(Pays == "Benin", DATE_COMPTA == d) %>% 
+      select(CLIENT, NOTATION)
+    , by=c("CLIENT")) %>%
+  #rename(NOTATIONAVANT = NOTATION.x, NOTATIONAPRES = NOTATION.y)
+  group_by(NOTATION.x, NOTATION.y) %>%
+  summarise(N = n()) %>%
+  ungroup
+
+tab$NOTATION.y[is.na(tab$NOTATION.y)] <- "Sortie"
+
+tab <- tab %>%
+  spread(key = NOTATION.y, value = N)
+
+# si la colonne "Sortie existante"
+
+if (!("Sortie" %in% names(tab))){
+  tab$Sortie <- NA
+} 
+
+
+names(tab)[1] <- "NOTATION"
+tab[is.na(tab)] <- 0
+m = tab[2:(ncol(tab)-1)]
+tab$TOTAL = rowSums(tab[2:ncol(tab)], na.rm = TRUE)
+tab$Degradation = rowSums(m * upper.tri(m))
+tab$Stabilite = m[row(m)==col(m)]
+tab$Amelioration = rowSums(m * lower.tri(m))
+
+
+tabProp <- tab
+tabProp[,2:(ncol(tabProp)-3)] <- tab[,2:(ncol(tab)-3)] / tab$TOTAL
+tabProp[,(ncol(tab)-2):ncol(tab)] <- tab[,(ncol(tab)-2):ncol(tab)] / tab$TOTAL
+tabProp[is.na(tabProp)] <- 0
+
+
+
+
+```{r echo=FALSE, Message=FALSE, fig.width=16, fig.height=6}
+library(plotly)
+library(hrbrthemes)
+library(viridis)
+library(ggplot2)
+p <- final.df %>%
+  filter(Pays == "Benin") %>%
+  group_by(NOTATION, DATE_COMPTA) %>%
+  summarise(
+    TRESO = abs(sum(TRESORERIE)) / 1e6,
+    SIGNAT = abs(sum(SIGNATURE)) / 1e6,
+    TOTAL = abs(TRESO + SIGNAT)
+  ) %>%
+  gather(key = "Indicateurs", value = "Montant", 3:5) %>%
+  ggplot(aes(x=as.character(DATE_COMPTA), y=Montant)) +
+  geom_line(aes(color = NOTATION), size = 0.75) +
+  xlab("(03) derniers arrêtés") +
+  ylab("Montant en Millions") +
+  geom_point(
+    aes(fill = NOTATION), 
+    size = 3, 
+    pch = 21, # Type of point that allows us to have both color (border) and fill.
+    color = "white", 
+    stroke = 1 # The width of the border, i.e. stroke.
+  ) +
+  facet_wrap(~Indicateurs) +
+  scale_fill_viridis(discrete = TRUE) +
+  theme(legend.position="none") +
+  ggtitle("Evolution des indicateurs par type de notation sur les 3 derniers mois") +
+  theme_ipsum()
+ggplotly(p, tooltip="text")
+```

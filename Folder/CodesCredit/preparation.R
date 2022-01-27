@@ -1,7 +1,7 @@
 ##### QUALITE DU PORTEFEUILLE
 library(data.table)
 library(tidyverse)
-source("CodesCredit/importData.R")
+# source("CodesCredit/importData.R")
 
 #datapath <- "C:\\Users\\jaouedraogo\\Documents\\R\\fichierTest2.csv"
 #data = read.csv2(datapath, na.strings = "")

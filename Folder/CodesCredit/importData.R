@@ -21,3 +21,7 @@ filepaths <- list.files(path="FichiersExcel/",
                         full.names=T)
 df.list <- lapply(filepaths, importFile)
 final.df <- rbind.fill(df.list)
+
+
+### detacher le package plyr
+detach("package:plyr", unload = TRUE)

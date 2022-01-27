@@ -5,7 +5,7 @@ library(dplyr)
 library(plyr)
 library(knitr)
 library(gt)
-source("CodesCredit/preparation.R")
+#source("CodesCredit/preparation.R")
 
 
 SituationDuPortefeuille <- function(data){
@@ -297,3 +297,6 @@ storyPtf <- function(df){
 storyPtf(res)
 
 
+
+# detacher le package plyr
+detach("package:plyr", unload = TRUE)

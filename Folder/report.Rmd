@@ -19,8 +19,11 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r include=FALSE, message=FALSE, warning=FALSE}
+source("CodesCredit/importData.R")
+source("CodesCredit/preparation.R")
 source("CodesCredit/portef_bancaire.R")
 source("CodesCredit/byNotation.R")
+source("CodesCredit/bySegment.R")
 ```
 
 
@@ -284,6 +287,7 @@ final.df %>%
 ```
 \
 \
+
 ## Vision consolidée
 ```{r echo=FALSE, message=FALSE}
 # detach("package:plyr", unload = TRUE)
@@ -291,43 +295,35 @@ final.df %>%
   notationConsolidee(arrete = params$arrete) 
 ```
 
+\
+\
 
+## Matrice de passage
 
-
-```{r echo=FALSE, Message=FALSE, fig.width=16, fig.height=6}
-library(plotly)
-library(hrbrthemes)
-library(viridis)
-library(ggplot2)
-p <- final.df %>%
-  filter(Pays == "Benin") %>%
-  group_by(NOTATION, DATE_COMPTA) %>%
-  summarise(
-    TRESO = abs(sum(TRESORERIE)) / 1e6,
-    SIGNAT = abs(sum(SIGNATURE)) / 1e6,
-    TOTAL = abs(TRESO + SIGNAT)
-  ) %>%
-  gather(key = "Indicateurs", value = "Montant", 3:5) %>%
-  ggplot(aes(x=as.character(DATE_COMPTA), y=Montant)) +
-  geom_line(aes(color = NOTATION), size = 0.75) +
-  xlab("(03) derniers arrêtés") +
-  ylab("Montant en Millions") +
-  geom_point(
-    aes(fill = NOTATION), 
-    size = 3, 
-    pch = 21, # Type of point that allows us to have both color (border) and fill.
-    color = "white", 
-    stroke = 1 # The width of the border, i.e. stroke.
-  ) +
-  facet_wrap(~Indicateurs) +
-  scale_fill_viridis(discrete = TRUE) +
-  theme(legend.position="none") +
-  ggtitle("Evolution des indicateurs par type de notation sur les 3 derniers mois") +
-  theme_ipsum()
-ggplotly(p, tooltip="text")
+```{r echo=FALSE, message=FALSE}
+d = as.Date(params$arrete)
+transTab <- final.df %>%
+  transNotation("Benin", d, 1)
+transTab$transitionPropGt
 ```
+
+
+**Observations:**
+`r transTab$transitionProp %>% storyNotation `
+
+
 # Répartition suivant le segment
+
+
+```{r echo=FALSE, message=FALSE}
+final.df %>%
+  SegmentParPays
+```
+
+
 # Répartition suivant le secteur d'activité
+```{r echo=FALSE, message=FALSE}
+```
 # CDL par age
 # Engagements hors bilan
 # 50 plus gros engagements
