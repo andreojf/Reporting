@@ -12,10 +12,15 @@ params:
   moisArrete: Decembre
   anneeArrete: 2020
   pays: Burkina
+
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r echo=FALSE}
+library(shiny)
 ```
 
 ```{r include=FALSE, message=FALSE, warning=FALSE}
@@ -24,6 +29,10 @@ source("CodesCredit/preparation.R")
 source("CodesCredit/portef_bancaire.R")
 source("CodesCredit/byNotation.R")
 source("CodesCredit/bySegment.R")
+source("CodesCredit/byBCEAO.R")
+source("CodesCredit/CDLparAge.R")
+source("CodesCredit/EngagementsHorsBilan.R")
+source("CodesCredit/50PlusGrosEngagements.R")
 ```
 
 
@@ -317,15 +326,97 @@ transTab$transitionPropGt
 
 ```{r echo=FALSE, message=FALSE}
 final.df %>%
-  SegmentParPays
+  SegmentParPays(params$arrete)
 ```
+
+```{r echo=FALSE, message=FALSE}
+final.df %>%
+  SegmentConsolide(params$arrete)
+```
+
+```{r echo=FALSE, message=FALSE}
+d = as.Date(params$arrete)
+transTab <- final.df %>%
+  transSegment("Benin", d, 1)
+transTab$transitionPropGt
+```
+
 
 
 # Répartition suivant le secteur d'activité
 ```{r echo=FALSE, message=FALSE}
+final.df %>%
+  BCEAOparPays("2020-12-31") %>%
+  tab_header(
+    title = md(paste("**Situation du portefeuille détaillée de CBI ", country, "**", sep = "")),
+    subtitle = paste("arreté du",params$arrete)
+  )
+```
+
+```{r echo=FALSE, message=FALSE}
+final.df %>%
+  BCEAOConsolidee("2020-12-31")
+```
+
+```{r echo=FALSE, message=FALSE}
+```
+
+```{r echo=FALSE, message=FALSE}
+```
+
+```{r echo=FALSE, message=FALSE}
 ```
 # CDL par age
+
+```{r echo=FALSE, message=FALSE}
+arrete = as.Date("31/12/2020", format="%d/%m/%Y")
+final.df %>%
+  declassementparPays(arrete)
+```
+
+```{r echo=FALSE, message=FALSE}
+arrete = as.Date("31/12/2020", format="%d/%m/%Y")
+final.df %>%
+  declassementConsolidee(arrete)
+```
+
+```{r echo=FALSE, message=FALSE}
+```
+
+```{r echo=FALSE, message=FALSE}
+```
+
+```{r echo=FALSE, message=FALSE}
+```
+
+```{r echo=FALSE, message=FALSE}
+```
 # Engagements hors bilan
+```{r echo=FALSE, message=FALSE}
+final.df %>%
+  HorsBilanparPays("2020-12-31", avalTraite)
+```
+
+```{r echo=FALSE, message=FALSE}
+```
+
+```{r echo=FALSE, message=FALSE}
+```
+
+```{r echo=FALSE, message=FALSE}
+```
 # 50 plus gros engagements
+
+```{r echo=FALSE, message=FALSE}
+top50 <- final.df %>%
+  top50ParPays(params$arrete)
+```
+
+
+```{r echo=FALSE, message=FALSE}
+final.df %>%
+  top50Consolidee(params$arrete) 
+```
+
 # Situation consolidée du portefeuille
 # 
