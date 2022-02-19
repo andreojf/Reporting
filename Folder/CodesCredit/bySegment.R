@@ -46,7 +46,7 @@ SegmentParPays <- function(df, arrete){
     ) %>%
     tab_options(
       #table.width = pct(80),
-      table.font.size = px(11)
+      table.font.size = px(13)
     )  %>%
     summary_rows(
       groups = TRUE,
@@ -73,7 +73,9 @@ SegmentParPays <- function(df, arrete){
       formatter = fmt_percent,
     ) %>%
     cols_label(
-      TRESO = "Trésorerie", SIGNAT = "Signature"
+      TRESO = "Trésorerie", SIGNAT = "Signature", 
+      Restructure = "Restructurés", PROVISIONS_CES = "Provisions pour CES",
+      TauxProv = "Taux de provisionnement", PartTotal = "% total"
     )
 }
 
@@ -127,7 +129,7 @@ SegmentConsolide <- function(df, arrete){
     ) %>%
     tab_options(
       #table.width = pct(80),
-      table.font.size = px(11)
+      table.font.size = px(13)
     )  %>%
     summary_rows(
       #groups = TRUE,
@@ -154,7 +156,9 @@ SegmentConsolide <- function(df, arrete){
       formatter = fmt_percent,
     ) %>%
     cols_label(
-      TRESO = "Trésorerie", SIGNAT = "Signature"
+      TRESO = "Trésorerie", SIGNAT = "Signature", 
+      Restructure = "Restructurés", PROVISIONS_CES = "Provisions pour CES",
+      TauxProv = "Taux de provisionnement", PartTotal = "% total"
     )
 }
 

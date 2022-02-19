@@ -6,7 +6,9 @@
 #   detach("package:plyr", unload=TRUE) 
 # } 
 # library(plyr)
-# detach("package:plyr", unload=TRUE) 
+if ("package:plyr" %in% search()){
+  detach("package:plyr", unload=TRUE) 
+}
 library(dplyr)
 library(gt)
 library(lubridate)
@@ -72,6 +74,13 @@ NotationFormatTable <- function(tab){
 #   notationParPays(pays="Benin") %>%
 #   NotationFormatTable
 
+
+
+
+###################################################################################################################
+################################# CODES POUR PRODUCTION TEMPLATE PAR PAYS #########################################
+###################################################################################################################
+
 # Vision par pays
 notationParPays2 <- function(df, arrete){
   
@@ -82,26 +91,31 @@ notationParPays2 <- function(df, arrete){
       N = length(TRESORERIE),
       TRESO = abs(sum(TRESORERIE)),
       SIGNAT = abs(sum(SIGNATURE)),
-      TOTAL = abs(TRESO + SIGNAT)) %>%
+      TOTAL = abs(TRESO + SIGNAT),
+      CDL = sum(-DOUTEUX_292),
+      RESTRUCTURE = sum(-Restructures),
+      CES = sum(CDL + RESTRUCTURE),
+      TXDEGRADATION = CES / TRESO
+      ) %>%
     group_by(Pays) %>%
-    ungroup %>%
     mutate(Poids = TRESO / sum(TRESO)) %>%
+    ungroup %>%
     gt(
       rowname_col = "NOTATION",
       groupname_col = "Pays"
-    ) %>% 
+    ) %>%
     fmt_percent(
-      columns = Poids,
+      columns = c(TXDEGRADATION, Poids),
       decimals = 1
     ) %>%
     fmt_number(
-      columns = c(TRESO, SIGNAT, TOTAL),
+      columns = c(TRESO, SIGNAT, TOTAL, CDL, RESTRUCTURE, CES),
       scale_by = 1 / 1E6,
       pattern = "{x} M",
       decimals = 0
     ) %>%
     fmt_missing(
-      columns = c(N, TRESO, SIGNAT, TOTAL),
+      columns = c(N, TRESO, SIGNAT, TOTAL, CDL, RESTRUCTURE, CES),
       missing_text = ""
     ) %>%
     tab_options(
@@ -110,7 +124,7 @@ notationParPays2 <- function(df, arrete){
     )  %>%
     summary_rows(
       groups = TRUE,
-      columns = c(TRESO, SIGNAT, TOTAL),
+      columns = c(TRESO, SIGNAT, TOTAL, CDL, RESTRUCTURE, CES),
       fns = list(TOTAL = "sum"),
       formatter = fmt_number,
       scale_by = 1 / 1E6,
@@ -132,13 +146,14 @@ notationParPays2 <- function(df, arrete){
       formatter = fmt_percent,
     ) %>%
     cols_label(
-      TRESO = "Trésorerie", SIGNAT = "Signature"
+      TRESO = "Trésorerie", SIGNAT = "Signature", RESTRUCTURE = "Restructurés",
+      CDL = "Créances Dout. et Lit.", TXDEGRADATION = "Taux de dégradation"
     )
 }
 
 
-final.df %>%
-  notationParPays2("2020-12-31")
+# report.df %>%
+#   notationParPays2("2020-12-31")
 
 
 #### Vision consolidée
@@ -152,23 +167,27 @@ notationConsolidee <- function(df, arrete){
       N = length(TRESORERIE),
       TRESO = abs(sum(TRESORERIE)),
       SIGNAT = abs(sum(SIGNATURE)),
-      TOTAL = abs(TRESO + SIGNAT)) %>%
+      TOTAL = abs(TRESO + SIGNAT),
+      CDL = sum(-DOUTEUX_292),
+      RESTRUCTURE = sum(-Restructures),
+      CES = sum(CDL + RESTRUCTURE),
+      TXDEGRADATION = CES / TRESO) %>%
     mutate(Poids = TRESO / sum(TRESO)) %>%
     gt(
       rowname_col = "NOTATION"
     ) %>%
     fmt_percent(
-      columns = Poids,
+      columns = c(Poids, TXDEGRADATION),
       decimals = 1
     ) %>%
     fmt_number(
-      columns = c(TRESO, SIGNAT, TOTAL),
+      columns = c(TRESO, SIGNAT, TOTAL, CDL, RESTRUCTURE, CES),
       scale_by = 1 / 1E6,
       pattern = "{x} M",
       decimals = 0
     ) %>%
     fmt_missing(
-      columns = c(N, TRESO, SIGNAT, TOTAL, Poids),
+      columns = c(N, TRESO, SIGNAT, TOTAL, CDL, RESTRUCTURE, CES, TXDEGRADATION, Poids),
       missing_text = ""
     ) %>%
     tab_options(
@@ -177,7 +196,7 @@ notationConsolidee <- function(df, arrete){
     )  %>%
     summary_rows(
       #groups = TRUE,
-      columns = c(TRESO, SIGNAT, TOTAL),
+      columns = c(TRESO, SIGNAT, TOTAL, CDL, RESTRUCTURE, CES),
       fns = list(TOTAL = "sum"),
       formatter = fmt_number,
       scale_by = 1 / 1E6,
@@ -199,14 +218,15 @@ notationConsolidee <- function(df, arrete){
       formatter = fmt_percent,
     ) %>%
     cols_label(
-      TRESO = "Trésorerie", SIGNAT = "Signature"
+      TRESO = "Trésorerie", SIGNAT = "Signature", RESTRUCTURE = "Restructurés", 
+      CDL = "Créances Dout. et Lit.", TXDEGRADATION = "Taux de dégradation"
     ) 
   
   
 }
-
-#final.df %>%
-#  notationConsolidee(arrete = d)
+# 
+# final.df %>%
+#   notationConsolidee(arrete = d)
 
 
 ###### Realiser une matrice de transition
@@ -268,7 +288,7 @@ transNotation <- function(df, pays, arrete, profondeur){
       missing_text = 0
     ) %>%
     tab_options(
-      table.width = pct(100),
+      #table.width = pct(100),
       table.font.size = px(13)
     )  %>% tab_spanner(
       label = as.character(d),
@@ -282,8 +302,8 @@ transNotation <- function(df, pays, arrete, profondeur){
   return(list(transitionN=tab, transitionProp = tabProp, transitionPropGt = tabPropGt))
 }
 
-transTab <- final.df %>%
-  transNotation("Benin", d, 2)
+# transTab <- final.df %>%
+#   transNotation("Benin", d, 2)
 
 #transTab$transitionProp
 
@@ -318,7 +338,7 @@ storyNotation <- function(tabProp, seuilDeg=0.1, seuilStab=0.95, seuilAme=0.1){
   
   # de facon générale
   m = tabProp[2:(ncol(tabProp)-5)]
-  print(m)
+  #print(m)
   classMig <- c()
   ans <- c()
   rownames(m) = colnames(m)
@@ -345,5 +365,30 @@ storyNotation <- function(tabProp, seuilDeg=0.1, seuilStab=0.95, seuilAme=0.1){
   
 }
 
-storyNotation(tabProp = transTab$transitionProp)
+#storyNotation(tabProp = transTab$transitionProp)
+
+
+##### croisement segmentation BCEAO vs NOTATION
+# tab <- final.df %>%
+#   filter(Pays == "Benin", DATE_COMPTA == "2020-12-31") %>%
+#   group_by(NOTATION, SECTEURBCEAO) %>%
+#   summarise(
+#     CES = - sum(DOUTEUX_292 + Restructures),
+#     TxDegradation = 100 * round(CES / sum(-TRESORERIE), 5)
+#          ) %>%
+#   select(NOTATION, SECTEURBCEAO, TxDegradation) %>%
+#   spread(key = NOTATION, value = TxDegradation) %>%
+#   left_join(
+#     final.df %>%
+#       filter(Pays == "Benin", DATE_COMPTA == "2020-12-31") %>%
+#       group_by(SECTEURBCEAO) %>%
+#       summarise(
+#         CES = - sum(DOUTEUX_292 + Restructures),
+#         TxDegradation = 100 * round(CES / sum(-TRESORERIE), 5)
+#       ) %>%
+#       select(SECTEURBCEAO, TxDegradation),
+#     
+#     by = "SECTEURBCEAO"
+#     
+#   )
 

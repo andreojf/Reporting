@@ -1,0 +1,269 @@
+---
+title: "Reporting mensuel sur le risque de crédit - `r params$arrete` de CBI `r params$pays`"
+author: "Publié par la Holding"
+date: "`r Sys.time()`"
+output:
+  html_document:
+    toc: yes
+    toc_depth: '3'
+    df_print: paged
+  word_document:
+    toc: yes
+    toc_depth: '3'
+    reference_docx: template_report_pays.docx
+params:
+  arrete: '2021-12-31'
+  prev1Arrete: '2021-06-30'
+  prev2Arrete: '2020-12-31'
+  moisArrete: Decembre
+  anneeArrete: 2020
+  pays: Togo
+  codeISO: TG
+  profondeur: 6
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{css, echo=FALSE}
+p {
+  font-family: "Times New Roman", Times, serif;
+  font-size: 20px
+}
+
+h1, h2, h3{
+  font-weight: bold;
+  font-family: "Times New Roman", Times, serif;
+}
+
+.main-container {
+  max-width: 1800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+```
+
+```{r echo=FALSE}
+library(shiny)
+```
+
+```{r include=FALSE, message=FALSE, warning=FALSE}
+source("CodesCredit/importData.R")
+source("CodesCredit/preparation.R")
+source("CodesCredit - MS/portef_bancaire_v2_0.R")
+source("CodesCredit - MS/byNotation_v2_0.R")
+# source("CodesCredit/bySegment.R")
+# source("CodesCredit/byBCEAO.R")
+# source("CodesCredit/CDLparAge.R")
+# source("CodesCredit/EngagementsHorsBilan.R")
+# source("CodesCredit/50PlusGrosEngagements.R")
+# source("CodesCredit/synthese.R")
+```
+
+```{r include=FALSE, message=FALSE, warning=FALSE}
+# creation de la base de travail par pays
+filepaths <- list.files(path="C:/Users/jaouedraogo/Documents/Coris/Reporting/Semestriels/Donnees/",
+                        recursive=T,
+                        pattern=".xlsx",
+                        full.names=T)
+
+report.df <- createDatasetHolding(filepaths, ISOPays = params$codeISO)
+### detacher le package plyr
+# detach("package:plyr", unload = TRUE)
+
+report.df <- report.df %>%
+  dataCleaning
+
+## Store the output
+write.csv(report.df,"C:/Users/jaouedraogo/Documents/Coris/Reporting/Folder/Inputs.csv", row.names = FALSE)
+```
+
+# Situation du portefeuille
+
+Au `r params$arrete`, la situation du portefeuille de **CBI `r params$pays`** se présente comme suit:
+\
+
+
+```{r echo=FALSE, message=FALSE}
+Pft <- report.df %>%
+  pfEvolPays(periods = c(
+              params$arrete,
+              params$prev1Arrete,
+              params$prev2Arrete
+         )) 
+Pft %>%
+  pfFormatTablePays(periods = c(
+              params$arrete,
+              params$prev1Arrete,
+              params$prev2Arrete
+                )) %>%
+  tab_header(
+    title = md(paste("**Situation du portefeuille détaillée de CBI ", params$pays, "**", sep = "")),
+    subtitle = paste("arreté du",params$arrete, "en Millions")
+  )
+```
+\
+Le portefeuille est ensuite regroupé en Sains, Restructurés et Douteux ou litigieux. Pour rappel, les sains englobent les effets, les crédits courts terme, moyen et long termes ainsi que les impayés.
+\
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align = 'center'}
+pftGlob <- report.df %>%
+  pfEvolGlobalPays(periods = c(
+              params$arrete,
+              params$prev1Arrete,
+              params$prev2Arrete
+         ))
+pftGlob %>%
+  pfFormatTablePays(periods = c(
+              params$arrete,
+              params$prev1Arrete,
+              params$prev2Arrete
+                )) %>%
+  tab_header(
+    title = md(paste("**Situation du portefeuille agrégée de CBI ", params$pays, "**", sep = "")),
+    subtitle = paste("arreté du",params$arrete, "en Millions")
+  )
+```
+\
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align = 'center'}
+### detacher le package plyr
+detach("package:plyr", unload = TRUE)
+getDataDC(Pft, params$arrete)
+```
+\
+De façon générale, la courbe suivante permet d'observer l'évolution de ces indicateurs sur les 12 derniers mois. 
+\
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align='center'}
+graphEvol12(pftGlob)
+```
+
+
+\
+
+# Répartition suivant la qualité 
+
+Cette section synthétise les montants des engagements directs (Trésorerie) et indirects (Signature) selon les classes de risques.
+\
+```{r echo=FALSE, message=FALSE}
+Notation <- report.df %>%
+  notationParPays(arrete = params$arrete) 
+
+Notation$tabFormat%>%
+  tab_header(
+    title = md(paste("**Répartition du portefeuille de chaque pays suivant les classes de risques**")),
+    subtitle = paste("arreté du",params$arrete)
+  )
+```
+
+## Matrice de passage
+
+Cette section décrit les transitions effectuées entre `r params$arrete` et `r params$prev1Arrete``. Il s'agit du taux de contreparties ayant transité d'une classe de risque A vers une classe de risque B entre deux arrêtés.
+\
+```{r echo=FALSE, message=FALSE}
+# calculer toutes les matrices de transitions 
+transTab <- report.df %>%
+  transNotation(params$pays, arreteDeb = params$prev1Arrete, arreteFin = params$arrete)
+
+```
+
+\
+## En Nombre
+\
+
+```{r echo=FALSE, message=FALSE}
+# afficher la matrice de transition en nombre
+transTab$tabN %>%
+  formatTabTransition(arreteDeb = params$prev1Arrete,
+                      arreteFin = params$arrete, 
+                      encours = F)
+```
+
+\
+## En encours
+```{r echo=FALSE, message=FALSE}
+# en encours PS: Nous avons considéré les encours directs
+transTab$tabEncours %>%
+  formatTabTransition(arreteDeb = params$prev1Arrete,
+                      arreteFin = params$arrete, 
+                      encours = T)
+```
+
+\
+## Amélioration , Stabilité, Dégradation
+\
+
+### En Nombre
+```{r echo=FALSE, message=FALSE}
+transTab$tabNASD %>%
+  formatTabASD(encours = F)
+```
+
+\
+### En encours
+\
+
+
+```{r echo=FALSE, message=FALSE}
+transTab$tabEncoursASD %>%
+  formatTabASD(encours = T)
+```
+
+
+\ 
+## FOCUS SUR LA NOUVELLE PROD
+\
+
+```{r echo=FALSE, message=FALSE}
+report.df %>%
+  FocusNouvProd(arreteFin = params$arrete,
+                arreteDeb = params$prev1Arrete)
+```
+
+\
+
+## Notation par secteur d'activité
+\
+
+
+```{r echo=FALSE, message=FALSE}
+report.df %>%
+  NOTATIONPARSECTEUR(params$arrete, 5) %>%
+  plotRiskSecteur
+```
+```{r echo=FALSE, message=FALSE}
+
+```
+
+# Répartition suivant le segment
+
+
+Cette section donne la situation des engagements (directs et indirects), des restructurés, des CES (Créances en souffrance) ainsi que des taux de dégradation et des taux de provisions par segment. Ces segments ont été définis par le groupe.
+
+
+
+
+# Répartition suivant le secteur d'activité
+
+Cette section reprend les montants des engagements du bilan et du hors bilan en plus des taux de provisionnement et de dégradation par secteur d'activité. Ces sections d'activités sont définis conformément au critères de la BCEAO.
+
+
+# CDL par age
+
+Cette section donne les montants de Encours douteux et litigieux, les montants et taux de provisions par ancienneté de déclassement.
+
+# Engagements hors bilan
+
+Les engagements hors bilan sont repris dans le tableau ci-dessous. 
+Il est important de rappeler que le tableau intègre les avals de traite qui sont des informations fournies par chaque entité:
+
+# La concentration du risque (50 plus gros risques)
+
+Au 30 juin 2021, la situation des 50 plus gros engagements du Groupe Coris se présente comme suit :
+
+
+# Synthèse des indicateurs
+
+Cette section fait la synthèse des indicateurs. Elle donne également une vision évolutive du portefeuille sur les (03) derniers arrêtés.
+
+
+# Indicateurs d'appétence au risque 

@@ -54,7 +54,10 @@ dataCleaning <- function(data){
 }
 
 
-# application de la fonction
-final.df <- final.df %>% 
-  dataCleaning
-
+# # application de la fonction
+# brut.df <- brut.df %>% 
+#   dataCleaning
+# 
+# 
+# ## Store the output
+# write.csv(final.df,"C:/Users/jaouedraogo/Documents/Coris/Reporting/Folder/Inputs.csv", row.names = FALSE)

@@ -1,13 +1,12 @@
 # entree de l'aval de traite
-avalTraite = t(data.frame(Benin = 1000000, 
-              CI = 5000000, 
-              ML = 2500000,
-              NG = 1500000,
-              SN = 2300000,
-              TG = 2000000, row.names = c("AVALSTRAITE"))) %>%
-  as.data.frame %>%
-  rownames_to_column("Pays")
-
+# avalTraite = t(data.frame(Benin = 1000000, 
+#                           CI = 5000000, 
+#                           ML = 2500000,
+#                           NG = 1500000,
+#                           SN = 2300000,
+#                           TG = 2000000, row.names = c("AVALSTRAITE"))) %>%
+#   as.data.frame %>%
+#   rownames_to_column("Pays")
 
 # attention il faudrait merger ici
 HorsBilanparPays <- function(df, arrete, avaltraite){
@@ -66,5 +65,5 @@ HorsBilanparPays <- function(df, arrete, avaltraite){
   
 }
 
-final.df %>%
-  HorsBilanparPays("2020-12-31", avalTraite)
+#final.df %>%
+#  HorsBilanparPays("2020-12-31", avalTraite)

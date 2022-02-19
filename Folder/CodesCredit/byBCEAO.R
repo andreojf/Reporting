@@ -50,7 +50,7 @@ BCEAOparPays <- function(df, arrete){
     ) %>%
     tab_options(
       #table.width = pct(80),
-      table.font.size = px(11)
+      table.font.size = px(13)
     )  %>%
     summary_rows(
       groups = TRUE,
@@ -136,7 +136,7 @@ BCEAOConsolidee <- function(df, arrete){
     ) %>%
     tab_options(
       #table.width = pct(80),
-      table.font.size = px(11)
+      table.font.size = px(13)
     )  %>%
     summary_rows(
       #groups = TRUE,

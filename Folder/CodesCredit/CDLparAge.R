@@ -1,4 +1,5 @@
 # source("preparation.R")
+library(lubridate)
 
 # donner la date d'arrete
 arrete = as.Date("31/12/2020", format="%d/%m/%Y")
@@ -7,7 +8,7 @@ arrete
 # calculer l'anciennete par déclassement
 declassementparPays <- function(df, arrete){
   
-  final.df %>%
+  df %>%
     filter(!is.na(DATE_DECL), DATE_COMPTA == arrete) %>%
     mutate(ageDeCL = -1*interval(arrete, DATE_DECL) %/% years(1),
            classDeCL = cut(ageDeCL, 
@@ -27,7 +28,7 @@ declassementparPays <- function(df, arrete){
       groupname_col = "Pays"
     ) %>%
     fmt_percent(
-      columns = c(TauxProv, PartN),
+      columns = c(TauxProv, PartN, PartEncours),
       decimals = 1
     ) %>%
     fmt_number(
@@ -68,9 +69,8 @@ declassementparPays <- function(df, arrete){
       formatter = fmt_percent,
     ) %>%
     cols_label(
-      #
+      PartEncours = "% Encours", PartN = "% N"
     )
-  
 }
 
 
@@ -142,7 +142,7 @@ declassementConsolidee <- function(df, arrete){
       formatter = fmt_percent,
     ) %>%
     cols_label(
-      #
+      PartEncours = "% Encours", PartN = "% N"
     )
   
 }
@@ -152,4 +152,18 @@ final.df %>%
   declassementConsolidee(arrete)
 
 
-
+final.df %>%
+  filter(!is.na(DATE_DECL), DATE_COMPTA == arrete) %>%
+  mutate(ageDeCL = -1*interval(arrete, DATE_DECL) %/% years(1),
+         classDeCL = cut(ageDeCL, 
+                         breaks=c(0, 1, 2, 3, 5, 999), right = FALSE)) %>%
+  group_by(Pays, classDeCL) %>%
+  summarise(
+    N = n(),
+    EncoursCDL = abs(sum(DOUTEUX_292)),
+    PROVISIONS = abs(sum(PROVISION)),
+    TauxProv = PROVISIONS / EncoursCDL
+  ) %>%
+  mutate(PartN = N / sum(N),
+         PartEncours = EncoursCDL / sum(EncoursCDL),
+         classDeCL = as.character(classDeCL))

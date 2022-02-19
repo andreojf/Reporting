@@ -5,7 +5,21 @@ library(dplyr)
 library(plyr)
 library(knitr)
 library(gt)
+library(lubridate)
 #source("CodesCredit/preparation.R")
+
+convertDate <- function(x){
+  
+  if (!(is.Date(x))){
+    x = as.Date(x)
+  }
+  jj = day(x)
+  mm = month(x)
+  yyyy = year(x)
+  
+  paste(yyyy,mm,jj,  sep = "-")
+}
+#class(convertDate(d))
 
 
 SituationDuPortefeuille <- function(data){
@@ -140,11 +154,12 @@ pfAgrege <- function(df){
       filter(DATE_COMPTA==date_compta) %>%
       SituationDuPortefeuille %>%
       .$porte_f %>% 
-      rename(c("Montant"=as.character(format(date_compta)))) %>%
-      left_join(out)
+      #rename(c("Montant"=convertDate(date_compta))) %>%
+      left_join(out, by="Intitule")
   }
   names(out) <- NULL
-  names(out) <- c("Intitule", format(dates_compta_top3))
+  collabels = sapply(dates_compta_top3, convertDate)
+  names(out) <- c("Intitule", collabels)
   out$evol1 = (out[,4] - out[,3]) / out[,3]
   out$evol2 = (out[,4] - out[,2]) / out[,2]
   
@@ -175,12 +190,13 @@ pfAgregeGlobal <- function(df){
       SituationDuPortefeuille %>%
       .$porte_f_tot %>%
       #mutate(Prop = Montant / sum(Montant)) %>%
-      rename(c("Montant"=as.character(format(date_compta)))) %>%
+      #rename(c("Montant"=as.character(format(date_compta)))) %>%
       left_join(out, by="Intitule")
   }
   
   names(out) <- NULL
-  names(out) <- c("Intitule", format(dates_compta_top3))
+  collabels = sapply(dates_compta_top3, convertDate)
+  names(out) <- c("Intitule", collabels)
   out$evol1 = (out[,4] - out[,3]) / out[,3]
   out$evol2 = (out[,4] - out[,2]) / out[,2]
   
@@ -200,7 +216,7 @@ pfEvol <- function(df, pays){
   dates_compta <- sort(dates_compta, decreasing = TRUE)
   dates_compta_top3 <- dates_compta[1:3]
   dates_compta_top3 <- dates_compta_top3[!is.na(dates_compta_top3)] # dans le cas où il y a moins de 3 arretés.
-  dates_compta_top3
+  #print(dates_compta_top3)
   
   out <- data.frame(Intitule=c(
     "Encours des effets",
@@ -218,14 +234,18 @@ pfEvol <- function(df, pays){
       filter(Pays == pays, DATE_COMPTA==date_compta) %>%
       SituationDuPortefeuille %>%
       .$porte_f %>% 
-      rename(c("Montant"=as.character(format(date_compta)))) %>%
-      left_join(out)
+      #rename(c("Montant"= convertDate(date_compta))) %>%
+      left_join(out, by="Intitule")
   }
+  
+  #print(out)
+  collabels = sapply(dates_compta_top3, convertDate)
+  #print(collabels)
   names(out) <- NULL
-  names(out) <- c("Intitule", format(dates_compta_top3))
+  names(out) <- c("Intitule", collabels)
   out$evol1 = (out[,4] - out[,3]) / out[,3]
   out$evol2 = (out[,4] - out[,2]) / out[,2]
-  
+  #print(out)
   #out <- formatTable(out)
   return(out)
 }
@@ -233,6 +253,8 @@ final.df %>%
   pfEvol("Benin") %>%
   pfFormatTable(country = country, params = params)
 
+  
+  
 pfEvolGlobal <- function(df, pays){
   
   
@@ -253,12 +275,13 @@ pfEvolGlobal <- function(df, pays){
       SituationDuPortefeuille %>%
       .$porte_f_tot %>%
       #mutate(Prop = Montant / sum(Montant)) %>%
-      rename(c("Montant"=as.character(format(date_compta)))) %>%
+      #rename(c("Montant"=as.character(format(date_compta)))) %>%
       left_join(out, by="Intitule")
   }
   
   names(out) <- NULL
-  names(out) <- c("Intitule", format(dates_compta_top3))
+  collabels = sapply(dates_compta_top3, convertDate)
+  names(out) <- c("Intitule", collabels)
   out$evol1 = (out[,4] - out[,3]) / out[,3]
   out$evol2 = (out[,4] - out[,2]) / out[,2]
   
@@ -266,12 +289,12 @@ pfEvolGlobal <- function(df, pays){
   
   return(out)
 }
-final.df %>%
-  pfEvolGlobal("Benin") %>%
-  pfFormatTable(country = country, params = params)
-
-res <- final.df %>%
-  pfAgregeGlobal
+# final.df %>%
+#   pfEvolGlobal("Benin") %>%
+#   pfFormatTable(country = country, params = params)
+# 
+# res <- final.df %>%
+#   pfAgregeGlobal
 
 
 #### story
@@ -279,9 +302,9 @@ storyPtf <- function(df){
   arrete = "2020-12-31"
   prevarrete = "2020-11-30"
   
-  percSain = df[df$Intitule == "Sain",6]
-  percRest = df[df$Intitule == "Restructure",6]
-  percDtLt = df[df$Intitule == "Douteux et Litigieux",6]
+  percSain = df[df$Intitule == "Sain",5]
+  percRest = df[df$Intitule == "Restructure",5]
+  percDtLt = df[df$Intitule == "Douteux et Litigieux",5]
   
   posnegSain = ifelse(percSain >0, "positive","negative")
   posnegRest = ifelse(percRest >0, "positive","negative")
@@ -294,9 +317,8 @@ storyPtf <- function(df){
   l'évolution est ",posnegDtLt," (", 100 * round(percDtLt, 4),"%) ")
 }
 
-storyPtf(res)
-
+# storyPtf(res)
 
 
 # detacher le package plyr
-detach("package:plyr", unload = TRUE)
+# detach("package:plyr", unload = TRUE)
